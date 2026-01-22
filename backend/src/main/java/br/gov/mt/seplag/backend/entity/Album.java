@@ -27,15 +27,14 @@ public class Album {
     @Column(name = "release_date")
     private LocalDate releaseDate;
 
+    @OneToMany(mappedBy = "album", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ImageAlbum> coverImageUrl;
 
     @Column(name = "number_of_tracks")
     private Integer numberOfTracks;
 
     @Column(columnDefinition = "TEXT")
     private String description;
-
-    @OneToMany(mappedBy = "album", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ImageAlbum> coverImageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "artist_id", nullable = false)
