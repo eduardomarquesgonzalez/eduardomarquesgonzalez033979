@@ -28,7 +28,7 @@ public class DataInitializer {
     @Bean
     public CommandLineRunner initData() {
         return args -> {
-            log.info("🚀 Iniciando carga de dados padrão...");
+            log.info("Iniciando carga de dados padrão...");
 
             initUsers();
             initArtistsAndAlbums();
