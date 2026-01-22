@@ -1,60 +1,26 @@
-# ============================================
-# Maven
-# ============================================
+# Git
+.git
+.gitignore
 
+# IDE
+.idea
+.vscode
+*.iml
+
+# Build
 target/
-pom.xml.tag
-pom.xml.releaseBackup
-pom.xml.versionsBackup
-pom.xml.next
-release.properties
-dependency-reduced-pom.xml
-buildNumber.properties
-.mvn/timing.properties
-.mvn/wrapper/maven-wrapper.jar
+!target/*.jar
 
-# ============================================
-# Java
-# ============================================
-
-# Compiled class files
-*.class
-
-# Log files
+# Logs
 *.log
 
-# Package files
-*.jar
-*.war
-*.nar
-*.ear
-*.zip
-*.tar.gz
-*.rar
-
-
-# ============================================
-# IDEs
-# ============================================
-
-# IntelliJ IDEA
-.idea/
-*.iml
-*.iws
-*.ipr
-out/
-
-# VS Code
-.vscode/
-
-# ============================================
-# Sistema Operacional
-# ============================================
-
-# Windows
+# OS
+.DS_Store
 Thumbs.db
 
+# Docker
+Dockerfile
+docker-compose.yml
 
-# Temporary files
-*.tmp
-*.swp
+# Docs
+README.md
