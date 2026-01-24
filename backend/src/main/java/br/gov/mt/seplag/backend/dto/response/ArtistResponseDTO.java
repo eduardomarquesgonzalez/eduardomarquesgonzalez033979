@@ -1,5 +1,6 @@
 package br.gov.mt.seplag.backend.dto.response;
 
+import br.gov.mt.seplag.backend.entity.Artist;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,4 +21,5 @@ public class ArtistResponseDTO {
 
     @Builder.Default
     private List<AlbumResponseDTO> albums = new ArrayList<>();
+
 }

@@ -20,4 +20,6 @@ public class AlbumResponseDTO {
     private String description;
     private Long artistId;
     private String artistName;
+
+
 }

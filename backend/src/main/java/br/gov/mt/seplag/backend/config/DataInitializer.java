@@ -41,7 +41,7 @@ public class DataInitializer {
     }
 
     private void initUsers() {
-        log.info("👥 Inicializando usuários...");
+        log.info("Inicializando usuários...");
 
         // Criar usuário ADMIN se não existir
         if (userRepository.findByUsername("admin").isEmpty()) {
