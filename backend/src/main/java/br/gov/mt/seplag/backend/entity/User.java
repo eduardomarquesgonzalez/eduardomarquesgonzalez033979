@@ -1,5 +1,6 @@
 package br.gov.mt.seplag.backend.entity;
 
+import br.gov.mt.seplag.backend.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,20 +30,20 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true, length = 100)
     private String username;
 
-    @Column(nullable = false, unique = true, length = 100)
-    private String email;
-
     @Column(nullable = false)
     private String password;
 
     @Column(nullable = false, length = 50)
     @Enumerated(EnumType.STRING)
     @Builder.Default
-    private UserRole role = UserRole.USER;
+    private Role role = Role.USER;
 
     @Builder.Default
     @Column(nullable = false)
-    private Boolean enabled = true;
+    private Boolean active = true;
+
+    @Column(name = "last_login")
+    private LocalDateTime lastLogin;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -50,7 +51,17 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        return List.of(new SimpleGrantedAuthority(role.getAuthority()));
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
     }
 
     @Override
@@ -70,10 +81,11 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return enabled;
+        return active;
     }
 
-    public enum UserRole {
-        USER, ADMIN
+    public void updateLastLogin() {
+        this.lastLogin = LocalDateTime.now();
     }
+
 }
