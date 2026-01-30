@@ -1,70 +1,41 @@
 package br.gov.mt.seplag.backend.mapper;
 
+import br.gov.mt.seplag.backend.dto.AlbumSimpleResponseDTO;
 import br.gov.mt.seplag.backend.dto.request.ArtistRequestDTO;
 import br.gov.mt.seplag.backend.dto.response.ArtistResponseDTO;
+import br.gov.mt.seplag.backend.entity.Album;
 import br.gov.mt.seplag.backend.entity.Artist;
-import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
-import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
+import java.util.List;
 
-@Component
-@RequiredArgsConstructor
-public class ArtistMapper implements BaseMapper<Artist, ArtistRequestDTO, ArtistResponseDTO> {
+public class ArtistMapper {
 
-    private final ModelMapper modelMapper;
+    private ArtistMapper() {
+    }
 
-    @Override
-    public Artist toEntity(ArtistRequestDTO requestDTO) {
-        if (requestDTO == null) {
-            return null;
-        }
-
+    public static Artist toEntity(ArtistRequestDTO dto) {
         return Artist.builder()
-                .name(requestDTO.getName())
-                .type(requestDTO.getType())
-                .albums(new ArrayList<>())
+                .name(dto.getName())
                 .build();
     }
 
-    @Override
-    public ArtistResponseDTO toResponseDTO(Artist entity) {
-        if (entity == null) {
-            return null;
-        }
-        ArtistResponseDTO dto = modelMapper.map(entity, ArtistResponseDTO.class);
-        if (dto.getAlbums() == null) {
-            dto.setAlbums(new ArrayList<>());
-        }
-        return dto;
+    public static ArtistResponseDTO toResponse(Artist artist) {
+        return ArtistResponseDTO.builder()
+                .id(artist.getId())
+                .name(artist.getName())
+                .albums(mapAlbums(artist.getAlbums()))
+                .build();
     }
 
-    public ArtistResponseDTO toResponseDTOWithAlbums(Artist entity, AlbumMapper albumMapper) {
-        if (entity == null) {
-            return null;
-        }
-        ArtistResponseDTO dto = toResponseDTO(entity);
-        if (entity.getAlbums() != null && !entity.getAlbums().isEmpty()) {
-            dto.setAlbums(entity.getAlbums().stream()
-                    .map(albumMapper::toResponseDTOSimple)
-                    .toList());
-        }
-        return dto;
-    }
+    private static List<AlbumSimpleResponseDTO> mapAlbums(
+            Iterable<Album> albums) {
 
-    @Override
-    public void updateEntityFromDTO(ArtistRequestDTO requestDTO, Artist entity) {
-        if (requestDTO == null || entity == null) {
-            return;
-        }
-
-        if (requestDTO.getName() != null) {
-            entity.setName(requestDTO.getName());
-        }
-
-        if (requestDTO.getType() != null) {
-            entity.setType(requestDTO.getType());
-        }
+        return albums == null ? List.of() :
+                ((List<Album>) albums).stream()
+                        .map(album -> AlbumSimpleResponseDTO.builder()
+                                .id(album.getId())
+                                .title(album.getTitle())
+                                .build())
+                        .toList();
     }
 }
