@@ -19,7 +19,7 @@ target/
 Thumbs.db
 
 # Docker
-Dockerfile
+backend/Dockerfile
 docker-compose.yml
 
 # Docs
