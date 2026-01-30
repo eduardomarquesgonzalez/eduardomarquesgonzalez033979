@@ -18,13 +18,17 @@ public class ImageAlbum {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "object_key", nullable = false)
+    @Column(name = "object_key", nullable = false, length = 255, unique = true)
     private String objectKey;
 
-    @Column(name = "content_type")
+    @Column(name = "file_name", nullable = false, length = 255)
+    private String fileName;
+
+    @Column(name = "content_type", nullable = false, length = 100)
     private String contentType;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "album_id", nullable = false)
     private Album album;
+
 }
