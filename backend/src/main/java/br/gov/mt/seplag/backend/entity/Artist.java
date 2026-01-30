@@ -5,10 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,12 +24,17 @@ public class Artist {
     @Column(nullable = false, length = 200)
     private String name;
 
-    private String type;
-
-    @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToMany(mappedBy = "artists")
     @Builder.Default
     private List<Album> albums = new ArrayList<>();
 
+    public void addAlbum(Album album) {
+        this.albums.add(album);
+        album.getArtists().add(this);
+    }
 
-
+    public void removeAlbum(Album album) {
+        this.albums.remove(album);
+        album.getArtists().remove(this);
+    }
 }
