@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
+import org.springframework.scheduling.annotation.Scheduled;
 
 @Entity
 @Table(name = "regional")
@@ -16,11 +17,13 @@ import lombok.*;
 public class Regional {
     @Id
     private Long id;
-
     @Column(nullable = false, length = 200)
     private String nome;
-
-    @Builder.Default
-    @Column(nullable = false)
     private Boolean ativo = true;
+
+    @Scheduled(cron = "0 0 * * * *")
+    public void syncRegionais() {
+
+
+    }
 }
