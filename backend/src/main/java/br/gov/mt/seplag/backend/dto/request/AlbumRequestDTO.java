@@ -1,15 +1,16 @@
 package br.gov.mt.seplag.backend.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;
+import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -17,18 +18,14 @@ import java.time.LocalDate;
 @Builder
 public class AlbumRequestDTO {
 
-    @NotBlank(message = "Título do álbum é obrigatório")
-    @Size(max = 200, message = "Título deve ter no máximo 200 caracteres")
+    @NotBlank(message = "O título é obrigatório")
+    @Size(max = 200, message = "O título deve ter no máximo 200 caracteres")
     private String title;
 
-    private LocalDate releaseDate;
+    @NotEmpty(message = "O álbum deve ter pelo menos um artista")
+    private Set<Long> artistIds;
 
-    @Positive(message = "Número de faixas deve ser positivo")
-    private Integer numberOfTracks;
-
-    @Size(max = 5000, message = "Descrição deve ter no máximo 5000 caracteres")
-    private String description;
-
-    @NotNull(message = "ID do artista é obrigatório")
-    private Long artistId;
+    @NotEmpty(message = "O álbum deve ter pelo menos uma ou mais imagens da capa do álbum.")
+    @NotEmpty
+    private List<MultipartFile> coverImages;
 }

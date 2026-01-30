@@ -1,11 +1,13 @@
 package br.gov.mt.seplag.backend.dto.response;
 
+import br.gov.mt.seplag.backend.dto.ImageAlbumDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -15,11 +17,17 @@ public class AlbumResponseDTO {
 
     private Long id;
     private String title;
-    private LocalDate releaseDate;
-    private Integer numberOfTracks;
-    private String description;
-    private Long artistId;
-    private String artistName;
+    private Set<Long> artists;
+    private Set<String> artistNames;
 
+    private List<String> coverImageUrls;
 
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class ArtistSummaryDTO {
+        private Long id;
+        private String name;
+    }
 }
