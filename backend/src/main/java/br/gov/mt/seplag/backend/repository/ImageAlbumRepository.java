@@ -1,7 +1,7 @@
 package br.gov.mt.seplag.backend.repository;
 
-import java.util.Collection;
+import br.gov.mt.seplag.backend.entity.ImageAlbum;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ImageAlbumRepository {
-    Collection<Object> findByAlbumId(Long albumId);
+public interface ImageAlbumRepository extends JpaRepository<ImageAlbum, Long> {
 }

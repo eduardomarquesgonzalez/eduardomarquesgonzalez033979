@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Duration;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -23,25 +22,24 @@ public class MinioStorageServiceImpl implements MinioStorageService {
     private final MinioConfig minioConfig;
 
     @Override
-    public String upload(MultipartFile file) {
+    public String upload(MultipartFile file, String folder) {
         try {
-            String objectName = UUID.randomUUID() + "-" + file.getOriginalFilename();
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            String objectKey = folder + "/" + fileName;
 
             minioClient.putObject(
                     PutObjectArgs.builder()
                             .bucket(minioConfig.getBucketName())
-                            .object(objectName)
+                            .object(objectKey)
                             .stream(file.getInputStream(), file.getSize(), -1)
                             .contentType(file.getContentType())
                             .build()
             );
 
-            log.info("Arquivo enviado ao MinIO: {}", objectName);
-            return objectName;
-
+            return objectKey;
         } catch (Exception e) {
-            log.error("Erro ao fazer upload no MinIO", e);
-            throw new RuntimeException("Erro ao salvar imagem da capa");
+            log.error("Erro ao fazer upload para o MinIO: {}", e.getMessage());
+            throw new RuntimeException("Não foi possível salvar o arquivo.");
         }
     }
 
