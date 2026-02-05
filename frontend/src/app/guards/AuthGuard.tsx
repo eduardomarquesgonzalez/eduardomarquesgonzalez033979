@@ -1,13 +1,12 @@
-import { Navigate, Outlet } from 'react-router-dom'
-import { useObservable } from '../../shared/hooks/useObservable'
-import { authFacade } from '../../modules/auth/AuthFacade'
+import { Navigate, Outlet } from "react-router-dom";
+import { authStore } from "@/modules/auth/stores/auth.store";
 
 export default function AuthGuard() {
-  const authState = useObservable(authFacade.getState(), authFacade.getCurrentState())
+  const { isAuthenticated } = authStore.getCurrentState();
 
-  if (!authState.isAuthenticated) {
-    return <Navigate to="/login" replace />
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
   }
 
-  return <Outlet />
+  return <Outlet />;
 }

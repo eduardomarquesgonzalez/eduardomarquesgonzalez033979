@@ -1,69 +1,85 @@
-import { Observable } from 'rxjs'
-import { authService, LoginRequest, RegisterRequest } from './auth.service'
-import { authStore, AuthState, User } from './auth.store'
+import { Observable } from "rxjs";
+import { authStore, AuthState } from "./stores/auth.store";
+import {
+  LoginRequest,
+  authService,
+  RegisterRequest,
+} from "./services/auth.service";
 
 class AuthFacade {
   getState(): Observable<AuthState> {
-    return authStore.getState()
+    return authStore.getState();
   }
 
   getCurrentState(): AuthState {
-    return authStore.getCurrentState()
+    return authStore.getCurrentState();
   }
 
   async login(credentials: LoginRequest): Promise<void> {
     try {
-      authStore.setLoading(true)
-      const response = await authService.login(credentials)
-      authStore.setAuth(response.user, response.token)
+      authStore.setLoading(true);
+      const response = await authService.login(credentials);
+      const userPayload = {
+        id: response.userId,
+        username: response.username,
+        role: response.role,
+      };
+
+      authStore.setAuth(userPayload, response.token);
     } catch (error) {
-      authStore.setLoading(false)
-      throw error
+      authStore.setLoading(false);
+      throw error;
     }
   }
 
   async register(data: RegisterRequest): Promise<void> {
     try {
-      authStore.setLoading(true)
-      const response = await authService.register(data)
-      authStore.setAuth(response.user, response.token)
+      authStore.setLoading(true);
+      const response = await authService.register(data);
+
+      const userPayload = {
+        id: response.userId,
+        username: response.username,
+        role: response.role,
+      };
+      authStore.setAuth(userPayload, response.token);
     } catch (error) {
-      authStore.setLoading(false)
-      throw error
+      authStore.setLoading(false);
+      throw error;
     }
   }
 
   async loadCurrentUser(): Promise<void> {
     try {
-      const user = await authService.getCurrentUser()
-      authStore.setUser(user)
+      const user = await authService.getCurrentUser();
+      authStore.setUser(user);
     } catch (error) {
-      this.logout()
-      throw error
+      this.logout();
+      throw error;
     }
   }
 
   async refreshToken(): Promise<void> {
     try {
-      const { token } = await authService.refreshToken()
-      const currentState = authStore.getCurrentState()
+      const { token } = await authService.refreshToken();
+      const currentState = authStore.getCurrentState();
       if (currentState.user) {
-        authStore.setAuth(currentState.user, token)
+        authStore.setAuth(currentState.user, token);
       }
     } catch (error) {
-      this.logout()
-      throw error
+      this.logout();
+      throw error;
     }
   }
 
   logout(): void {
-    authService.logout()
-    authStore.clearAuth()
+    authService.logout();
+    authStore.clearAuth();
   }
 
   isAuthenticated(): boolean {
-    return authStore.getCurrentState().isAuthenticated
+    return authStore.getCurrentState().isAuthenticated;
   }
 }
 
-export const authFacade = new AuthFacade()
+export const authFacade = new AuthFacade();

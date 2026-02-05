@@ -1,3 +1,4 @@
+import { authStore } from "@/modules/auth/stores/auth.store";
 import axios, {
   AxiosInstance,
   AxiosRequestConfig,
@@ -6,9 +7,7 @@ import axios, {
   InternalAxiosRequestConfig,
 } from "axios";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:8080/api";
-
+const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
 class HttpService {
   private api: AxiosInstance;
   private isRefreshing = false;
@@ -84,11 +83,17 @@ class HttpService {
               refreshToken,
             });
 
-            const { token: newToken, refreshToken: newRefreshToken } =
-              response.data;
+            const {
+              token: newToken,
+              refreshToken: newRefreshToken,
+              userId,
+              username,
+              role,
+            } = response.data;
 
             localStorage.setItem("token", newToken);
             localStorage.setItem("refreshToken", newRefreshToken);
+            authStore.setAuth({ id: userId, username, role }, newToken);
 
             console.log("Token renovado com sucesso!");
 
@@ -106,7 +111,9 @@ class HttpService {
             this.failedQueue = [];
 
             localStorage.removeItem("token");
+
             localStorage.removeItem("refreshToken");
+            authStore.clearAuth();
             window.location.href = "/login";
 
             return Promise.reject(refreshError);

@@ -1,5 +1,10 @@
 import { BehaviorSubject, Observable } from 'rxjs'
-
+import { jwtDecode } from 'jwt-decode'
+export interface User {
+  id: number
+  username: string
+  role: string
+}
 export interface AuthState {
   isAuthenticated: boolean
   user: User | null
@@ -7,16 +12,28 @@ export interface AuthState {
   loading: boolean
 }
 
-export interface User {
-  id: number
-  username: string
+const getInitialUser = (token: string | null): User | null => {
+  if (!token) return null
+  try {
+    const decoded: any = jwtDecode(token)
+    return {
+      id: decoded.userId || decoded.id,
+      username: decoded.sub || decoded.username,
+      role: decoded.roles ? decoded.roles[0] : 'USER'
+    }
+  } catch (error) {
+    console.error("Erro ao decodificar token inicial", error)
+    localStorage.removeItem('token')
+    return null
+  }
 }
-
 class AuthStore {
+  private initialToken = localStorage.getItem('token')
+  
   private state = new BehaviorSubject<AuthState>({
-    isAuthenticated: !!localStorage.getItem('token'),
-    user: null,
-    token: localStorage.getItem('token'),
+    isAuthenticated: !!this.initialToken,
+    user: getInitialUser(this.initialToken),
+    token: this.initialToken,
     loading: false,
   })
 
@@ -34,9 +51,10 @@ class AuthStore {
 
   setAuth(user: User, token: string) {
     localStorage.setItem('token', token)
+    const finalUser = user.role ? user : (getInitialUser(token) || user)
     this.state.next({
       isAuthenticated: true,
-      user,
+      user: finalUser,
       token,
       loading: false,
     })
@@ -44,6 +62,7 @@ class AuthStore {
 
   clearAuth() {
     localStorage.removeItem('token')
+    localStorage.removeItem('refreshToken') 
     this.state.next({
       isAuthenticated: false,
       user: null,
