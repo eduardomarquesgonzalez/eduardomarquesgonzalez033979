@@ -48,7 +48,7 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     public ResponseEntity<AuthResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
-        AuthResponse response = authService.refreshToken(request.getRefreshToken());
+        AuthResponse response = authService.refreshToken(request.refreshToken());
         return ResponseEntity.ok(response);
     }
 }

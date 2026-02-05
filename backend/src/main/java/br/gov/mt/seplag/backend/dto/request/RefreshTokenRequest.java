@@ -1,17 +1,11 @@
 package br.gov.mt.seplag.backend.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class RefreshTokenRequest {
-    
-    @NotBlank(message = "Refresh token é obrigatório")
-    private String refreshToken;
+public record RefreshTokenRequest(
+        @NotBlank(message = "Refresh token é obrigatório")
+        String refreshToken
+) {
 }

@@ -46,10 +46,11 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
-                                "/actuator/health"
+                                "/actuator/health",
+                                "/ws/**",
+                                "/topic/**",
+                                "/app/**"
                         ).permitAll()
-
-                        // Endpoints que requerem autenticação específica
                         .requestMatchers(HttpMethod.POST, "/api/artists/**").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/artists/**").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/artists/**").hasAnyRole("ADMIN")
@@ -75,7 +76,8 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder);
         return authProvider;
     }
@@ -88,7 +90,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:8080", "http://localhost:8081"));
+        configuration.setAllowedOrigins(List.of("http://localhost:8080", "http://localhost:8081", "http://localhost:3000"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

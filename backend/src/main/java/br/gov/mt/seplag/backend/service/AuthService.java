@@ -31,14 +31,14 @@ public class AuthService {
 
     @Transactional
     public UserResponse register(RegisterRequest request) {
-        if (userRepository.existsByUsername(request.getUsername())) {
+        if (userRepository.existsByUsername(request.username())) {
             throw new DataIntegrityViolationException("Username já está em uso");
         }
 
         User user = User.builder()
-                .username(request.getUsername())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole() != null ? request.getRole() : Role.USER)
+                .username(request.username())
+                .password(passwordEncoder.encode(request.password()))
+                .role(request.role() != null ? request.role() : Role.USER)
                 .active(true)
                 .build();
 
@@ -51,11 +51,11 @@ public class AuthService {
     public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
-                        request.getPassword()
+                        request.username(),
+                        request.password()
                 )
         );
-        User user = userRepository.findByUsername(request.getUsername())
+        User user = userRepository.findByUsername(request.username())
                 .orElseThrow(() -> new ObjectnotFoundException("Usuário não encontrado"));
         user.updateLastLogin();
         userRepository.save(user);

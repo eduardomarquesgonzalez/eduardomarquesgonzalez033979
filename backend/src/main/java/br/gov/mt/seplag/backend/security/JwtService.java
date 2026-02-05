@@ -101,7 +101,7 @@ public class JwtService {
 
     private Claims extractAllClaims(String token) {
         return Jwts
-                .parser()// verificar
+                .parser()//TODO: verificar
                 .setSigningKey(getSignInKey())
                 .build()
                 .parseClaimsJws(token)

@@ -17,6 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
+import java.util.Date;
 
 
 @Component
@@ -66,5 +67,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (Exception exception) {
             handlerExceptionResolver.resolveException(request, response, null, exception);
         }
+    }
+
+    private CharSequence json() {
+        long date = new Date().getTime();
+        return "{"
+                + "\"timestamp\": " + date + ", "
+                + "\"status\": 401, "
+                + "\"error\": \"Não autorizado\", "
+                + "\"message\": \"Usuario ou senha invalidos\", "
+                + "\"path\": \"/login\"}";
     }
 }

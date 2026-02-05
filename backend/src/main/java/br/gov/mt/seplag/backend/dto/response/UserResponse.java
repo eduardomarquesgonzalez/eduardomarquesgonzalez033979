@@ -1,23 +1,17 @@
 package br.gov.mt.seplag.backend.dto.response;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class UserResponse {
-
-    private Long id;
-    private String fullName;
-    private String username;
-    private String role;
-    private Boolean active;
-    private LocalDateTime createdAt;
-    private LocalDateTime lastLogin;
+public record UserResponse(
+        Long id,
+        String fullName,
+        String username,
+        String role,
+        Boolean active,
+        LocalDateTime createdAt,
+        LocalDateTime lastLogin
+) {
 }
