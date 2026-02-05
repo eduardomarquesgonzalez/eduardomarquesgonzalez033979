@@ -20,7 +20,15 @@ export default function Login() {
       await authFacade.login(formData);
       navigate("/artists");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Erro ao fazer login");
+      const backendMessage = err.response?.data?.message;
+      const details = err.response?.data?.details;
+      const validationErrors = details
+        ? Object.values(details).join(", ")
+        : null;
+      setError(
+        validationErrors || backendMessage || "Erro ao conectar com o servidor",
+      );
+      console.error("Erro no login:", err.response?.data);
     } finally {
       setLoading(false);
     }

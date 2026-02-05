@@ -2,7 +2,6 @@ import { BehaviorSubject, Observable } from "rxjs";
 import { albumService, AlbumSearchParams } from "./services/album.service";
 import {
   Album,
-  AlbumDetail,
   CreateAlbumRequest,
   UpdateAlbumRequest,
 } from "@/shared/models/album.model";
@@ -94,7 +93,7 @@ class AlbumFacade {
       this.setLoading(true);
       await albumService.deleteImage(albumId, imageId);
 
-      // Recarrega o álbum após deletar imagem
+
       await this.loadAlbumById(albumId);
     } catch (error: any) {
       this.setError(error.response?.data?.message || "Erro ao deletar imagem");

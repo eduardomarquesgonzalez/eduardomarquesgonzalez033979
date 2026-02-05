@@ -17,7 +17,6 @@ export default function AlbumList() {
 
   const { albums, loading, error } = albumState;
 
-  // Extração de parâmetros da URL
   const searchTitle = searchParams.get("title") || "";
   const sort = searchParams.get("sort") === "desc" ? "desc" : "asc";
   const currentPage = Number(searchParams.get("page") || 0);

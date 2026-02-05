@@ -11,8 +11,6 @@ class WebSocketService {
   private client: Client | null = null;
   private messageSubject = new BehaviorSubject<WebSocketMessage | null>(null);
   private connectionSubject = new BehaviorSubject<boolean>(false);
-  private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
 
   connect(url: string) {
     if (this.client?.connected) {
@@ -41,8 +39,7 @@ class WebSocketService {
         onConnect: () => {
           console.log("WebSocket conectado");
           this.connectionSubject.next(true);
-          this.reconnectAttempts = 0;
-
+  
           this.client?.subscribe("/topic/notifications", (message) => {
             try {
               const data = JSON.parse(message.body);
