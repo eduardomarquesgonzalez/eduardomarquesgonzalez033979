@@ -1,33 +1,37 @@
 package br.gov.mt.seplag.backend.dto.response;
 
-import br.gov.mt.seplag.backend.dto.ImageAlbumDTO;
-import lombok.AllArgsConstructor;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
-import java.util.Set;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Schema(description = "Dados do álbum para listagem")
 @Builder
-public class AlbumResponseDTO {
+public record AlbumResponseDTO(
 
-    private Long id;
-    private String title;
-    private Set<Long> artists;
-    private Set<String> artistNames;
+        @Schema(description = "ID do álbum", example = "1", required = true)
+        Long id,
 
-    private List<String> coverImageUrls;
+        @Schema(description = "Título do álbum", example = "Abbey Road", required = true)
+        String title,
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class ArtistSummaryDTO {
-        private Long id;
-        private String name;
-    }
-}
+        @Schema(
+                description = "URL da capa principal (pré-assinada, válida por 30min)",
+                example = "http://localhost:9000/music-catalog/albums/1/cover.jpg?X-Amz-..."
+        )
+        String coverUrl,
+
+        @Schema(
+                description = "Nomes dos artistas (ordenados alfabeticamente)",
+                example = "[\"George Martin\", \"The Beatles\"]",
+                required = true
+        )
+        List<String> artistNames,
+
+        @Schema(
+                description = "Quantidade total de imagens do álbum",
+                example = "3",
+                required = true
+        )
+        Integer imageCount
+) {}

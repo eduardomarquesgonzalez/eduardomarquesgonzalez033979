@@ -1,113 +1,123 @@
 package br.gov.mt.seplag.backend.service;
 
 import br.gov.mt.seplag.backend.dto.request.AlbumRequestDTO;
+import br.gov.mt.seplag.backend.dto.response.AlbumDetailResponseDTO;
 import br.gov.mt.seplag.backend.dto.response.AlbumResponseDTO;
 import br.gov.mt.seplag.backend.entity.Album;
 import br.gov.mt.seplag.backend.entity.Artist;
 import br.gov.mt.seplag.backend.entity.ImageAlbum;
+import br.gov.mt.seplag.backend.exception.ObjectnotFoundException;
 import br.gov.mt.seplag.backend.mapper.AlbumMapper;
 import br.gov.mt.seplag.backend.repository.AlbumRepository;
 import br.gov.mt.seplag.backend.repository.ArtistRepository;
-import jakarta.persistence.EntityNotFoundException;
+import br.gov.mt.seplag.backend.repository.ImageAlbumRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class AlbumService {
+
     private final AlbumRepository albumRepository;
     private final ArtistRepository artistRepository;
-    private AlbumMapper albumMapper;
-    private MinioStorageService storageService;
+    private final ImageAlbumRepository imageAlbumRepository;
+    private final MinioStorageService storageService;
+    private final AlbumMapper albumMapper;
 
     @Transactional(readOnly = true)
-    public AlbumResponseDTO findById(Long id) {
-        Album album = albumRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Álbum não encontrado"));
+    public Page<AlbumResponseDTO> findAll(String title, Long artistId, Pageable pageable) {
+        Page<Album> page;
 
-        return albumMapper.toResponseDTO(album);
-    }
-
-    @Transactional(readOnly = true)
-    public List<AlbumResponseDTO> findByArtistName(String artistName, String direction) {
-        Sort sort = Sort.by("title");
-        if ("desc".equalsIgnoreCase(direction)) {
-            sort = sort.descending();
+        if (title != null && artistId != null) {
+            page = albumRepository.findByTitleAndArtist(title, artistId, pageable);
+        } else if (title != null) {
+            page = albumRepository.findByTitleContainingIgnoreCase(title, pageable);
+        } else if (artistId != null) {
+            page = albumRepository.findByArtistId(artistId, pageable);
         } else {
-            sort = sort.ascending();
-        }
-        List<Album> albums = albumRepository.findByArtists_NameIgnoreCaseContaining(artistName, sort);
-        return albums.stream().map(albumMapper::toResponseDTO).toList();
-    }
-
-
-    public AlbumResponseDTO create(AlbumRequestDTO dto) {
-        Set<Artist> artists = new HashSet<>(artistRepository.findAllById(dto.getArtistIds()).stream().collect(Collectors.toSet()));
-
-        if (artists.size() != dto.getArtistIds().size()) {
-            throw new EntityNotFoundException("Um ou mais artistas não encontrados");
+            page = albumRepository.findAll(pageable);
         }
 
-        Album album = Album.builder()
-                .title(dto.getTitle())
-                .artists(artists)
-                .build();
-
-        Album saved = albumRepository.save(album);
-        return albumMapper.toResponseDTO(saved);
+        return page.map(albumMapper::toResponse);
     }
 
-    @Transactional
-    public AlbumResponseDTO update(Long id, AlbumRequestDTO dto) {
-        Album album = albumRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Álbum não encontrado"));
-        Set<Artist> artists = artistRepository.findAllById(dto.getArtistIds())
-                .stream().collect(Collectors.toSet());
-        if (artists.size() != dto.getArtistIds().size()) {
-            throw new EntityNotFoundException("Um ou mais artistas não encontrados");
-        }
-        album.setTitle(dto.getTitle());
-        album.getArtists().clear();
-        album.getArtists().addAll(artists);
-        return albumMapper.toResponseDTO(album);
+    @Transactional(readOnly = true)
+    public AlbumDetailResponseDTO findById(Long id) {
+        Album album = albumRepository.findByIdWithDetails(id)
+                .orElseThrow(() -> new ObjectnotFoundException("Álbum não encontrado. ID: " + id));
+
+        return albumMapper.toDetailResponse(album);
     }
 
+    @Transactional(readOnly = true)
     public Page<AlbumResponseDTO> findByArtistId(Long artistId, Pageable pageable) {
-        return albumRepository.findByArtistId(artistId, pageable).map(albumMapper::toResponseDTO);
-    }
-
-    public Page<AlbumResponseDTO> findAll(String title, String artistName, Pageable pageable) {
-        Page<Album> page = albumRepository.search(normalize(title), normalize(artistName), pageable);
-        return page.map(albumMapper::toResponseDTO);
+        log.debug("Buscando álbuns do artista ID: {}, page: {}",
+                artistId, pageable.getPageNumber());
+        if (!artistRepository.existsById(artistId)) {
+            throw new ObjectnotFoundException("Artista não encontrado. ID: " + artistId);
+        }
+        Page<Album> page = albumRepository.findByArtistId(artistId, pageable);
+        log.debug("Encontrados {} álbuns para o artista ID: {}",
+                page.getTotalElements(), artistId);
+        return page.map(albumMapper::toResponse);
     }
 
     @Transactional
-    public void uploadImages(Long albumId, List<MultipartFile> files) {
-        Album album = albumRepository.findById(albumId)
-                .orElseThrow(() -> new EntityNotFoundException("Álbum não encontrado"));
-        for (MultipartFile file : files) {
-            String objectKey = storageService.upload(file);
-            ImageAlbum image = ImageAlbum.builder()
-                    .objectKey(objectKey).fileName(file.getOriginalFilename())
-                    .contentType(file.getContentType()).album(album).build();
-            album.getCoverImages().add(image);
-        }
+    public AlbumResponseDTO create(AlbumRequestDTO dto, List<MultipartFile> images) {
+        log.info("Criando álbum: '{}'", dto.title());
+        Album album = albumMapper.toEntity(dto);
+        Set<Artist> artists = dto.artistIds().stream()
+                .map(artistId -> artistRepository.findById(artistId).orElseThrow(() -> new ObjectnotFoundException("Artista não encontrado. ID: " + artistId)))
+                .collect(Collectors.toSet());
+        artists.forEach(album::addArtistAlbum);
+        album = albumRepository.save(album);
+        if (images != null && !images.isEmpty()) {uploadImages(album, images);}
+        log.info("Álbum criado - ID: {}, imagens: {}", album.getId(),
+                album.getCoverImages() != null ? album.getCoverImages().size() : 0);
+        return albumMapper.toResponse(album);
     }
 
-    private String normalize(String value) {
-        return (value == null || value.isBlank())
-                ? null
-                : value.trim();
+    @Transactional
+    public AlbumResponseDTO update(Long id, AlbumRequestDTO dto, List<MultipartFile> newImages) {
+        log.info("Atualizando álbum ID: {}", id);
+        Album album = albumRepository.findById(id)
+                .orElseThrow(() -> new ObjectnotFoundException("Álbum não encontrado. ID: " + id));
+        if (dto.title() != null && !dto.title().isBlank()) {album.setTitle(dto.title());}
+        if (dto.artistIds() != null && !dto.artistIds().isEmpty()) {album.clearArtists();
+            Album finalAlbum = album;dto.artistIds().forEach(artistId -> {
+                Artist artist = artistRepository.findById(artistId)
+                        .orElseThrow(() -> new ObjectnotFoundException("Artista não encontrado. ID: " + artistId));
+                finalAlbum.addArtistAlbum(artist);
+            });
+        }
+        if (newImages != null && !newImages.isEmpty()) {uploadImages(album, newImages);}
+        album = albumRepository.save(album);
+        log.info("Álbum atualizado - ID: {}", id);
+        return albumMapper.toResponse(album);
+    }
+
+    private void uploadImages(Album album, List<MultipartFile> images) {
+        String folder = "albums/" + album.getId();
+        for (MultipartFile file : images) {if (file.isEmpty()) {continue;}
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                throw new IllegalArgumentException("Arquivo deve ser uma imagem: " + file.getOriginalFilename());
+            }
+            String objectKey = storageService.upload(file, folder);
+            ImageAlbum imageAlbum = ImageAlbum.builder()
+                    .objectKey(objectKey).fileName(file.getOriginalFilename()).contentType(contentType).build();
+            album.addImage(imageAlbum);
+            log.info("Imagem adicionada: {} → {}", file.getOriginalFilename(), objectKey);
+        }
     }
 }
