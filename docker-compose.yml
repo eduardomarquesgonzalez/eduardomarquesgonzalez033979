@@ -13,7 +13,7 @@ services:
     networks:
       - artists-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U artists"]
+      test: [ "CMD-SHELL", "pg_isready -U artists" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -29,52 +29,49 @@ services:
       - "9001:9001"
     volumes:
       - minio_data:/data
+    command: server /data --console-address ":9001"
     networks:
       - artists-network
-    command: server /data --console-address ":9001"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
-  app:
+  backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
-    container_name: artists-app
-    ports:
-      - "8080:8080"
+    container_name: backend
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8080
 
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/artists
       SPRING_DATASOURCE_USERNAME: artists
       SPRING_DATASOURCE_PASSWORD: password
 
-      # JPA
-      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
-      SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION: true
-      SPRING_JPA_SHOW_SQL: true
-
-      # Flyway
       SPRING_FLYWAY_ENABLED: true
-      SPRING_FLYWAY_LOCATIONS: classpath:db/migration
-      LOGGING_LEVEL_ORG_FLYWAYDB: DEBUG
 
-      # MinIO
       MINIO_URL: http://minio:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
-      MINIO_BUCKET_NAME: artists-images
-
-    networks:
-      - artists-network
+      MINIO_BUCKET_NAME: albums
     depends_on:
       postgres:
         condition: service_healthy
       minio:
-        condition: service_healthy
+        condition: service_started
+    networks:
+      - artists-network
+    ports: [ ]
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    ports:
+      - "80:80"
+    env_file:
+      - ./frontend/.env
+    depends_on:
+      - backend
+    networks:
+      - artists-network
 
 volumes:
   postgres_data:
