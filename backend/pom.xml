@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.1</version>
+        <version>3.4.2</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>br.gov.mt.seplag</groupId>
@@ -51,11 +51,11 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
-        <!-- Flyway Database Initializer -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-flyway</artifactId>
-        </dependency>
+<!--        &lt;!&ndash; Flyway Database Initializer &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-starter-flyway</artifactId>-->
+<!--        </dependency>-->
 
         <!-- Database -->
         <dependency>
@@ -130,6 +130,24 @@
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.6.0</version>
+        </dependency>
+
+        <!-- WebSocket -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>sockjs-client</artifactId>
+            <version>1.5.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>stomp-websocket</artifactId>
+            <version>2.3.4</version>
         </dependency>
 
         <!-- Test -->
