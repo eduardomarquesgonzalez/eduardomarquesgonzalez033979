@@ -1,9 +1,6 @@
 package br.gov.mt.seplag.backend.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -16,14 +13,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 @Builder
 public class Regional {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false, length = 200)
+    private Integer externalId;
     private String nome;
     private Boolean ativo = true;
-
-    @Scheduled(cron = "0 0 * * * *")
     public void syncRegionais() {
-
 
     }
 }
