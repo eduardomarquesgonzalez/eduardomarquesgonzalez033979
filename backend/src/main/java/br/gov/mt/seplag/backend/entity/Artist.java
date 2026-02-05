@@ -1,13 +1,11 @@
 package br.gov.mt.seplag.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "artists")
@@ -15,6 +13,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"albums"})
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = {"albums"})
 public class Artist {
 
     @Id
@@ -26,15 +27,6 @@ public class Artist {
 
     @ManyToMany(mappedBy = "artists")
     @Builder.Default
-    private List<Album> albums = new ArrayList<>();
+    private Set<Album> albums = new HashSet<>();
 
-    public void addAlbum(Album album) {
-        this.albums.add(album);
-        album.getArtists().add(this);
-    }
-
-    public void removeAlbum(Album album) {
-        this.albums.remove(album);
-        album.getArtists().remove(this);
-    }
 }
