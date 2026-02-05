@@ -17,6 +17,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -57,6 +58,7 @@ public class AlbumController {
             summary = "Criar novo álbum com upload de imagens",
             description = "Cria um álbum e faz upload de uma ou mais imagens de capa para o MinIO")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AlbumResponseDTO> create(
             @Parameter(description = "Título do álbum", required = true)
             @RequestParam String title,
@@ -75,6 +77,7 @@ public class AlbumController {
             summary = "Atualizar álbum e adicionar novas imagens",
             description = "Atualiza dados do álbum e opcionalmente adiciona novas imagens")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AlbumResponseDTO> update(
             @PathVariable Long id,
             @Parameter(description = "Novo título (opcional)")
