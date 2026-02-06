@@ -79,11 +79,9 @@ public class AlbumService {
         Set<Artist> artists = dto.artistIds().stream()
                 .map(artistId -> artistRepository.findById(artistId).orElseThrow(() -> new ObjectnotFoundException("Artista não encontrado. ID: " + artistId)))
                 .collect(Collectors.toSet());
-        artists.forEach(album::addArtist);
+        artists.forEach(album::addArtistAlbum);
         album = albumRepository.save(album);
-        if (images != null && !images.isEmpty()) {
-            uploadImages(album, images);
-        }
+        if (images != null && !images.isEmpty()) {uploadImages(album, images);}
         log.info("Álbum criado - ID: {}, imagens: {}", album.getId(),
                 album.getCoverImages() != null ? album.getCoverImages().size() : 0);
         return albumMapper.toResponse(album);
@@ -94,46 +92,32 @@ public class AlbumService {
         log.info("Atualizando álbum ID: {}", id);
         Album album = albumRepository.findById(id)
                 .orElseThrow(() -> new ObjectnotFoundException("Álbum não encontrado. ID: " + id));
-        if (dto.title() != null && !dto.title().isBlank()) {
-            album.setTitle(dto.title());
-        }
-        if (dto.artistIds() != null && !dto.artistIds().isEmpty()) {
-            album.clearArtists();
-            Album finalAlbum = album;
-            dto.artistIds().forEach(artistId -> {
+        if (dto.title() != null && !dto.title().isBlank()) {album.setTitle(dto.title());}
+        if (dto.artistIds() != null && !dto.artistIds().isEmpty()) {album.clearArtists();
+            Album finalAlbum = album;dto.artistIds().forEach(artistId -> {
                 Artist artist = artistRepository.findById(artistId)
                         .orElseThrow(() -> new ObjectnotFoundException("Artista não encontrado. ID: " + artistId));
-                finalAlbum.addArtist(artist);
+                finalAlbum.addArtistAlbum(artist);
             });
         }
-        if (newImages != null && !newImages.isEmpty()) {
-            uploadImages(album, newImages);
-        }
+        if (newImages != null && !newImages.isEmpty()) {uploadImages(album, newImages);}
         album = albumRepository.save(album);
         log.info("Álbum atualizado - ID: {}", id);
         return albumMapper.toResponse(album);
     }
 
     private void uploadImages(Album album, List<MultipartFile> images) {
-        String folder = album.getId().toString();
-        for (MultipartFile file : images) {
-            if (file.isEmpty()) {
-                continue;
-            }
+        String folder = "albums/" + album.getId();
+        for (MultipartFile file : images) {if (file.isEmpty()) {continue;}
             String contentType = file.getContentType();
             if (contentType == null || !contentType.startsWith("image/")) {
                 throw new IllegalArgumentException("Arquivo deve ser uma imagem: " + file.getOriginalFilename());
             }
-            String fileUrl = storageService.upload(file, folder);
+            String objectKey = storageService.upload(file, folder);
             ImageAlbum imageAlbum = ImageAlbum.builder()
-                    .objectKey(fileUrl)
-                    .fileName(file.getOriginalFilename())
-                    .contentType(contentType)
-                    .album(album)
-                    .build();
-
+                    .objectKey(objectKey).fileName(file.getOriginalFilename()).contentType(contentType).build();
             album.addImage(imageAlbum);
-            log.info("Imagem adicionada: {} → {}", file.getOriginalFilename(), fileUrl);
+            log.info("Imagem adicionada: {} → {}", file.getOriginalFilename(), objectKey);
         }
     }
 }

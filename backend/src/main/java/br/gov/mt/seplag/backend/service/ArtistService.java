@@ -49,8 +49,11 @@ public class ArtistService {
                     return new ObjectnotFoundException("Artista não encontrado. ID: " + id);
                 });
 
+        // Força inicialização da coleção lazy
         int albumCount = artist.getAlbums().size();
+
         log.info("Artista encontrado: '{}' com {} álbuns", artist.getName(), albumCount);
+
         return artistMapper.toDetailResponse(artist);
     }
 
