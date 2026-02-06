@@ -33,6 +33,7 @@ public class AlbumService {
     private final ImageAlbumRepository imageAlbumRepository;
     private final MinioStorageService storageService;
     private final AlbumMapper albumMapper;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public Page<AlbumResponseDTO> findAll(String title, Long artistId, Pageable pageable) {
@@ -81,6 +82,7 @@ public class AlbumService {
                 .collect(Collectors.toSet());
         artists.forEach(album::addArtistAlbum);
         album = albumRepository.save(album);
+        notificationService.notifyAlbumCreated(album);
         if (images != null && !images.isEmpty()) {uploadImages(album, images);}
         log.info("Álbum criado - ID: {}, imagens: {}", album.getId(),
                 album.getCoverImages() != null ? album.getCoverImages().size() : 0);

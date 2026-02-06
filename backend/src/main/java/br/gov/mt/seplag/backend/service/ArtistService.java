@@ -23,6 +23,7 @@ public class ArtistService {
     private final ArtistRepository artistRepository;
     private final AlbumService albumService;
     private final ArtistMapper artistMapper;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public Page<ArtistResponseDTO> findAll(String name, Pageable pageable) {
@@ -35,7 +36,7 @@ public class ArtistService {
         return projections.map(projection -> ArtistResponseDTO.builder()
                 .id(projection.getId())
                 .name(projection.getName())
-                .albumCount(projection.getAlbumCount().intValue()) // COALESCE garante não-null
+                .albumCount(projection.getAlbumCount().intValue())
                 .build());
     }
 
@@ -48,29 +49,25 @@ public class ArtistService {
                     log.error("Artista não encontrado - ID: {}", id);
                     return new ObjectnotFoundException("Artista não encontrado. ID: " + id);
                 });
-
-        // Força inicialização da coleção lazy
         int albumCount = artist.getAlbums().size();
-
         log.info("Artista encontrado: '{}' com {} álbuns", artist.getName(), albumCount);
-
         return artistMapper.toDetailResponse(artist);
     }
 
     @Transactional(readOnly = true)
     public Page<AlbumResponseDTO> findAlbumsByArtist(Long artistId, Pageable pageable) {
         if (!artistRepository.existsById(artistId)) {
-            throw new ObjectnotFoundException("Artista não encontrado. ID: " + artistId);}
+            throw new ObjectnotFoundException("Artista não encontrado. ID: " + artistId);
+        }
         return albumService.findByArtistId(artistId, pageable);
     }
 
     @Transactional
     public ArtistResponseDTO create(ArtistRequestDTO dto) {
         log.info("Criando novo artista: '{}'", dto.name());
-
         Artist artist = artistMapper.toEntity(dto);
         artist = artistRepository.save(artist);
-
+        notificationService.notifyArtistCreated(artist.getId(), artist.getName());
         log.info("Artista criado com sucesso - ID: {}", artist.getId());
         return artistMapper.toResponse(artist);
     }
@@ -78,13 +75,11 @@ public class ArtistService {
     @Transactional
     public ArtistResponseDTO update(Long id, ArtistRequestDTO dto) {
         log.info("Atualizando artista - ID: {}, novo nome: '{}'", id, dto.name());
-
         Artist artist = artistRepository.findById(id)
                 .orElseThrow(() -> new ObjectnotFoundException("Artista não encontrado. ID: " + id));
-
         artist.setName(dto.name());
         artist = artistRepository.save(artist);
-
+        notificationService.notifyArtistUpdated(artist.getId(), artist.getName());
         log.info("Artista atualizado com sucesso - ID: {}", id);
         return artistMapper.toResponse(artist);
     }
