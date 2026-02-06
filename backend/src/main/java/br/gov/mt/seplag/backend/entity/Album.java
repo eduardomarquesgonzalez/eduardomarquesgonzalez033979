@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -19,6 +20,7 @@ public class Album {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(nullable = false, length = 200)
@@ -28,21 +30,19 @@ public class Album {
     private String coverUrl;
 
     @OneToMany(mappedBy = "album", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
+    private Set<ImageAlbum> coverImages = new HashSet<>();
 
-    private Set<ImageAlbum> coverImages;
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "album_artist",
-            joinColumns = @JoinColumn(name = "album_id"),
-            inverseJoinColumns = @JoinColumn(name = "artist_id")
-    )
-
-    private Set<Artist> artists;
+    @ManyToMany(mappedBy = "albums", fetch = FetchType.LAZY)
+    @Builder.Default
+    private Set<Artist> artists = new HashSet<>();
 
     public void addImage(ImageAlbum image) {
         if (image == null) {
             return;
+        }
+        if (this.coverImages == null) {
+            this.coverImages = new HashSet<>();
         }
         coverImages.add(image);
         image.setAlbum(this);
@@ -51,15 +51,24 @@ public class Album {
         }
     }
 
-    public void addArtistAlbum(Artist artist) {
+    public void addArtist(Artist artist) {
         if (artist == null) {
             return;
         }
-
+        if (this.artists == null) {
+            this.artists = new HashSet<>();
+        }
+        if (artist.getAlbums() == null) {
+            artist.setAlbums(new HashSet<>());
+        }
         this.artists.add(artist);
         artist.getAlbums().add(this);
     }
 
     public void clearArtists() {
+        if (this.artists != null) {
+            this.artists.forEach(artist -> artist.getAlbums().remove(this));
+            this.artists.clear();
+        }
     }
 }
