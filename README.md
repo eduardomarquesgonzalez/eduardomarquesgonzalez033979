@@ -31,7 +31,7 @@ A arquitetura segue um modelo **SPA + API REST**, com serviços desacoplados e c
 ```
 ┌──────────────┐
 │   Frontend   │  React + Vite + Tailwind
-│  (Nginx)     │  Porta 8080
+│  (Nginx)     │  Porta 80
 └───────┬──────┘
         │ HTTP (REST)
 ┌───────▼──────┐
@@ -74,13 +74,13 @@ A arquitetura segue um modelo **SPA + API REST**, com serviços desacoplados e c
 
 ## 📂 Estrutura dos Containers
 
-| Serviço       | Descrição                    | Porta          |
-| ------------- | ---------------------------- | -------------- |
-| frontend      | SPA React servida via Nginx  | 8080           |
+| Serviço       | Descrição                    | Porta       |
+| ------------- | ---------------------------- | ----------- |
+| frontend      | SPA React servida via Nginx  | 80          |
 | backend       | API REST Spring Boot         | 8080 (interna) |
-| postgres      | Banco de dados PostgreSQL    | 5433           |
-| minio         | Armazenamento de imagens     | 9000           |
-| minio-console | Console administrativo MinIO | 9001           |
+| postgres      | Banco de dados PostgreSQL    | 5433        |
+| minio         | Armazenamento de imagens     | 9000        |
+| minio-console | Console administrativo MinIO | 9001        |
 
 ---
 
@@ -111,7 +111,7 @@ A arquitetura segue um modelo **SPA + API REST**, com serviços desacoplados e c
 
 ---
 
-## 🚀 Como Executar o Projeto
+##  Como Executar o Projeto
 
 ### Pré-requisitos
 
@@ -120,7 +120,7 @@ A arquitetura segue um modelo **SPA + API REST**, com serviços desacoplados e c
 
 ---
 
-### 1️⃣ Clonar o repositório
+### 1️ Clonar o repositório
 
 ```bash
 git clone https://github.com/eduardomarquesgonzalez/eduardomarquesgonzalez033979
@@ -139,7 +139,7 @@ docker-compose up -d --build
 
 ### 3️⃣ Acessos
 
-* 🌐 **Aplicação Web**: [http://localhost:8080](http://localhost:80)
+* 🌐 **Aplicação Web**: [http://localhost](http://localhost:80)
 * ⚙️ **API Backend**: [http://localhost:8080/api/v1](http://localhost:8080/api/v1)
 * 🪣 **MinIO Console**: [http://localhost:9001](http://localhost:9001)
 * 🗄️ **PostgreSQL**: localhost:5433
@@ -172,7 +172,6 @@ Senha:  user123
 
 * Utilizar a interface web para:
 
-    * Criar usuários
     * Login
     * Cadastrar artistas
     * Criar álbuns com upload de capa
@@ -195,4 +194,5 @@ http://localhost:8080/api/v1
 
 ---
 
- **Qualquer dúvida ou ajuste adicional, fico à disposição.**
+## Pendencias
+* Testes Unitários, não foi possível realizar os tests devido tempo e problemas com configuração do notebook rodar o docker

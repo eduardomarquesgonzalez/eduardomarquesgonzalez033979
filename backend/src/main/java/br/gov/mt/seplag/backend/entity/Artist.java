@@ -25,7 +25,8 @@ public class Artist {
     @Column(nullable = false, length = 200)
     private String name;
 
-    @ManyToMany(mappedBy = "artists")
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "album_artist", joinColumns = @JoinColumn(name = "artist_id"), inverseJoinColumns = @JoinColumn(name = "album_id"))
     @Builder.Default
     private Set<Album> albums = new HashSet<>();
 
